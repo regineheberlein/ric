@@ -14,4 +14,4 @@ This is a rudimentary implementation of the RiC-CM as XML for testing purposes.
 ### Limitations:
 - This schema does not enforce the right-hand class constraints of object properties
 
-A complementary Wikibase test implementation is in progress at `https://recordsincontexts.wikibase.cloud`.
+A complementary [https://recordsincontexts.wikibase.cloud](Wikibase test implementation) is in progress.
