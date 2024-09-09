@@ -1,0 +1,52 @@
+
+lc-event = attribute eventType {
+"accession"|
+"appraisal"|
+"capture"|
+"compiling"|
+"compression"|
+"creation"|
+"deaccession"|
+"decompression"|
+"decryption"|
+"deletion"|
+"digital signature generation"|
+"digital signature validation"|
+"displaying"|
+"dissemination"|
+"encryption"|
+"execution"|
+"exporting"|
+"extraction"|
+"filename change"|
+"fixity check"|
+"forensic feature analysis"|
+"format identification"|
+"imaging"|
+"information package creation"|
+"information package merging"|
+"information package splitting"|
+"ingestion"|
+"ingestion end"|
+"ingestion start"|
+"interpreting"|
+"message digest calculation"|
+"metadata extraction"|
+"metadata modification"|
+"migration"|
+"modification"|
+"normalization"|
+"packing"|
+"policy assignment"|
+"printing"|
+"quarantine"|
+"recovery"|
+"redaction"|
+"refreshment"|
+"rendering"|
+"replication"|
+"transfer"|
+"unpacking"|
+"unquarantine"|
+"validation"|
+"virus check"}
