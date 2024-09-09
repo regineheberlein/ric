@@ -1,0 +1,100 @@
+
+marc-genre-terms |= attribute documentaryFormType {
+"abstract or summary"|
+"art original"|
+"art reproduction"|
+"article"|
+"atlas"|
+"autobiography"|
+"bibliographic data"|
+"bibliography"|
+"biography"|
+"book"|
+"calendar"|
+"catalog"|
+"chart"|
+"comedy"|
+"comic or graphic novel"|
+"computer program"|
+"conference publication"|
+"database"|
+"dictionary"|
+"diorama"|
+"directory"|
+"discography"|
+"document (computer)"|
+"drama"|
+"encyclopedia"|
+"essay"|
+"festschrift"|
+"fiction"|
+"filmography"|
+"filmstrip"|
+"finding aid"|
+"flash card"|
+"folktale"|
+"font"|
+"game"|
+"globe"|
+"government publication"|
+"graphic"|
+"handook"|
+"history"|
+"humor, satire"|
+"index"|
+"instruction"|
+"interactive multimedia"|
+"interview"|
+"issue"|
+"journal"|
+"kit"|
+"language instruction"|
+"law report or digest"|
+"legal article"|
+"legal case and case notes"|
+"legislation"|
+"letter"|
+"loose-leaf"|
+"manuscript"|
+"map"|
+"memoir"|
+"microscope slide"|
+"model"|
+"motion picture"|
+"newspaper"|
+"nonmusical sound"|
+"novel"|
+"numeric data"|
+"offprint"|
+"online system or service"|
+"patent"|
+"periodical"|
+"picture"|
+"playing cards"|
+"poetry"|
+"postcard"|
+"programmed text"|
+"puzzle"|
+"realia"|
+"rehearsal"|
+"remote sensing image"|
+"reporting"|
+"representational"|
+"review"|
+"script"|
+"series"|
+"short story"|
+"slide"|
+"sound"|
+"speech"|
+"standard or specifications"|
+"statistics"|
+"survey of literature"|
+"technical report"|
+"thesis"|
+"toy"|
+"transparency"|
+"treaty"|
+"videorecording"|
+"wall map"|
+"web site"}
