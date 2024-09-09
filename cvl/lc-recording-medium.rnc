@@ -1,0 +1,6 @@
+
+lc-recording-medium = attribute productionTechnique {
+"magnetic"|
+"magneto-optical"|
+"optical"
+}
