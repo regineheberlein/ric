@@ -8,7 +8,7 @@ This is a rudimentary implementation of the RiC-CM as XML for testing purposes.
 
 ### Implementation decisions:
 - The schema does not implement inverse relations
-- It does not implement class hierarchies
+- It does not implement relation hierarchies
 - It implements controlled vocabularies as local files (CVL directory)
 
 ### Limitations:
