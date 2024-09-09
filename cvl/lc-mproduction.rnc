@@ -1,0 +1,23 @@
+
+lcProductionMethods = attribute productionTechnique {
+"blueline process"|
+"blueprint process"|
+"burning"|
+"collotype"|
+"daguerreotype process"|
+"dual layer"|
+"embossing"|
+"engraving"|
+"etching"|
+"inscribing"|
+"lithography"|
+"photocopying"|
+"photoengraving"|
+"photogravure process"|
+"printing"|
+"solid dot"|
+"stamping"|
+"swell paper"|
+"thermoform"|
+"white print process"
+}
