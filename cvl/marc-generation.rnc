@@ -1,0 +1,22 @@
+
+marc-generation |= attribute state {
+"derivative master"|
+"disc master"|
+"duplicate"|
+"facsimile"|
+"first generation"|
+"master"|
+"master positive"|
+"master tape"|
+"mixed generation"|
+"mother"|
+"original"|
+"original negative"|
+"paper positive"|
+"printing master"|
+"reference print"|
+"reversal"|
+"service copy"|
+"stamper"|
+"tape duplication master"|
+"test pressing"}
