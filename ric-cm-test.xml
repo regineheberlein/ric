@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="RiC-CM.rnc" type="application/relax-ng-compact-syntax"?>
+<ric xm:schemaLocation="" xmlns:xm="http://www.w3.org/2001/XMLSchema-instance">
+	<RecordResource type="Record" identity="description1-frontmatter">
+		<name>Drafts of Shakespeare's Macbeth: Finding Aid</name>
+		<describes_or_described identifierOfRelation="RiC-R021" target="rr1"/>
+		<is_associated_with_rule identifierOfRelation="RiC-R062i" target="r1"/>
+	</RecordResource>
+	<RecordResource accruals="non-accruing" classification="AB2024.1" contentType="text"
+		identity="rr1" language="eng" legalStatus="CCBY" recordSetType="file" type="RecordSet">
+		<name>Drafts of Shakespeare's Macbeth</name>
+		<generalDescription>A collection of drafts of Shakespeare's Scottish Play, in his own hand.</generalDescription>
+		<includes_or_included identifierOfRelation="RiC-R024" target="rr1.1"/>
+		<has_provenance dateOfRelation="d4" identifierOfRelation="RiC-R026" target="a3"/>
+		<has_provenance certaintyOfRelation="uncertain" dateOfRelation="d5"
+			identifierOfRelation="RiC-R026" placeOfRelation="p1" target="a4"/>
+	</RecordResource>
+	<RecordResource contentType="text" documentaryFormType="drama" identity="rr1.1" language="eng"
+		state="original" type="Record">
+		<name uri="http://viaf.org/viaf/2304161819210527960001">Macbeth</name>
+		<name>The Scottish Play</name>
+		<generalDescription>A play by William Shakespeare</generalDescription>
+		<authenticityNote>Signed by the author. Almost certainly a fake.</authenticityNote>
+		<conditionsOfAccess>A digital access copy is available.</conditionsOfAccess>
+		<conditionsOfUse>No use restrictions.</conditionsOfUse>
+		<history>Anonymously gifted to the Library in 2008.</history>
+		<structure>Acts I-V</structure>
+		<recordResourceExtent>5 acts</recordResourceExtent>
+		<scopeAndContent>Includes an early draft of The Scottish Play.</scopeAndContent>
+		<integrityNote>Text is faded and largely illegible.</integrityNote>
+		<!-- relations -->
+		<has_author identifierOfRelation="RiC-R079" sourceOfRelation="a3" target="a1"/>
+		<has_or_had_instantiation identifierOfRelation="RiC-R025" target="i1"/>
+		<has_or_had_instantiation identifierOfRelation="RiC-R025" target="i2"/>
+		<has_or_had_constituent identifierOfRelation="RiC-R003" target="rr1.1.1"/>
+	</RecordResource>
+	<RecordResource identity="rr1.1.1" type="RecordPart">
+		<name>Act I</name>
+		<generalDescription>The first Act</generalDescription>
+	</RecordResource>
+	<Instantiation carrierType="Laid papers" identity="i1" productionTechnique="inscribing"
+		representationType="text">
+		<carrierExtent>1 volume</carrierExtent>
+		<instantiationExtent>150 pages</instantiationExtent>
+		<physicalCharacteristicsNote>writing is extremely faded</physicalCharacteristicsNote>
+		<qualityOfRepresentationNote>ink faded due to water damage</qualityOfRepresentationNote>
+	</Instantiation>
+	<Instantiation carrierType="videodisc" identity="i2" productionTechnique="optical"
+		representationType="still image">
+		<carrierExtent>500MB</carrierExtent>
+		<instantiationExtent>1.5MB</instantiationExtent>
+		<physicalCharacteristicsNote>file format: JPEG</physicalCharacteristicsNote>
+		<qualityOfRepresentationNote>resolution: 300dpi</qualityOfRepresentationNote>
+	</Instantiation>
+	<Agent identity="a1" type="person" uri="http://viaf.org/viaf/96994048">
+		<name>William Shakespeare</name>
+		<generalDescription>English playwright and poet, 1564-1616.</generalDescription>
+		<occupationType>writer</occupationType>
+		<occupationType>actor</occupationType>
+		<demographicGroup>Writers</demographicGroup>
+		<demographicGroup>Actors</demographicGroup>
+		<demographicGroup>Gentlemen</demographicGroup>
+		<has_birth_date identifierOfRelation="RiC-R070i"
+			sourceOfRelation="https://en.wikipedia.org/wiki/William_Shakespeare" target="d2"/>
+		<has_death_date identifierOfRelation="RiC-R072i"
+			sourceOfRelation="https://en.wikipedia.org/wiki/William_Shakespeare" target="d3"/>
+	</Agent>
+	<Agent identity="a3" type="person" uri="http://viaf.org/viaf/96994048">
+		<name>[name withheld]</name>
+		<generalDescription>donor of the purported Macbeth drafts</generalDescription>
+		<demographicGroup>Philanthropists</demographicGroup>
+	</Agent>
+	<Agent groupType="corporateBody" identity="a2" type="group" uri="http://viaf.org/viaf/124568752">
+		<name>Globe Theatre</name>
+		<generalDescription>Theater in London, England</generalDescription>
+		<is_associated_with_event identifierOfRelation="RiC-R057i" target="e3"/>
+	</Agent>
+	<Agent identity="a4" type="person" uri="http://viaf.org/viaf/28499937">
+		<name>Edward Blount</name>
+		<generalDescription/>
+		<occupationType>bookseller</occupationType>
+	</Agent>
+	<Event eventType="creation" identity="e1" type="resourceEvent">
+		<name>Creation of the first draft of The Tragedie of Macbeth</name>
+		<is_associated_with_date identifierOfRelation="RiC-R068i" target="d1"/>
+		<is_event_associated_with identifierOfRelation="RiC-R057" target="a1"/>
+	</Event>
+	<Event eventType="premiere" identity="e2" type="performanceEvent">
+		<name>First known performance of Macbeth</name>
+		<is_associated_with_date identifierOfRelation="RiC-R068i" target="d1"/>
+		<has_or_had_participant identifierOfRelation="RiC-R058" target="a2"/>
+	</Event>
+	<Event activityType="function" identity="e3" type="activity">
+		<name>business manager</name>
+	</Event>
+	<Place coordinates="51.50853000 -0.12574000" identity="p1" placeType="geographic"
+		uri="http://viaf.org/viaf/8676155769103627880004">
+		<name>London</name>
+		<location>St. Paul's Churchyard, Sign of the Bear</location>
+	</Place>
+	<Date dateType="single" identity="d1" normalizedDate="1606">
+		<expressedDate>1606</expressedDate>
+	</Date>
+	<Date dateType="single" identity="d2" normalizedDate="1564">
+		<expressedDate>1564</expressedDate>
+	</Date>
+	<Date dateType="single" identity="d3" normalizedDate="1616">
+		<expressedDate>1616</expressedDate>
+	</Date>
+	<Date dateType="single" identity="d4" normalizedDate="2020">
+		<expressedDate>2020</expressedDate>
+	</Date>
+	<Date dateType="single" identity="d5" normalizedDate="1608">
+		<expressedDate>1608</expressedDate>
+	</Date>
+	<Rule identity="r1" ruleType="professional standard">
+		<name>Records in Contexts</name>
+		<generalDescription>A conceptual framework for archival description.</generalDescription>
+	</Rule>
+</ric>
