@@ -1,0 +1,1262 @@
+#This is a rudimentary implementation of the RiC-CM as XML for testing purposes.
+
+#Implementation principles:
+#Classes are represented as elements
+#Properties (CM relations) are implemented as elements
+#Properties (CM attributes) are implemented as xml attributes if they take a controlled term
+#Properties (CM attributes) are implemented as xml elements if they take free text
+
+#Implementation decisions:
+#The schema does not implement inverse relations
+#It does not implement class hierarchies
+#It implements controlled vocabularies as local files (CVL directory)
+
+
+namespace sch = "http://www.ascc.net/xml/schematron"
+namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
+
+## 
+## Root
+##
+start = ric
+
+## require at least one entity
+ric =
+	element ric {
+		attribute xsi:schemaLocation { xsd:anyURI },
+		(RecordResource* & Instantiation* & Agent* & Event* & Place* & Date* & Rule* & Thing*)+
+	}
+# RiC-A01 Accruals
+
+## 
+## Set up controlled vocabularies 
+##
+accrualsAttribute = attribute accruals { "accruing" | "non-accruing" }
+# RiC-A02 Activity Type (controlled value)
+activityTypeAttribute =
+	attribute activityType { "function" | "transaction" | "task" | "business process" }?
+# RiC-A05 Carrier Type (controlled value; "it is necessary to note the type of carrier" >> required
+include "cvl/lc-carrier-types.rnc"
+include "cvl/rbms-paper-terms.rnc"
+carrierTypeAttribute = (lcCarrierTypes? | RBMSpaperTerms?)+
+# RiC-A10 Content Type (controlled value)
+include "cvl/marc-content-type.rnc"
+contentTypeAttribute = marc-content-type
+# RiC-A17 Documentary Form Type (controlled value)
+include "cvl/marc-genre-terms.rnc"
+documentaryFormTypeAttribute = marc-genre-terms
+# RiC-A18 Event Type (controlled value)
+
+# Implementation decision: define three umbrella types with cvl's underneath each
+include "cvl/lc-event.rnc"
+resourceEventTypeAttribute = lc-event
+lifeEventTypeAttribute =
+	attribute eventType { "birth" | "death" | "marriage" | "divorce" | "accident" }
+performanceEventTypeAttribute = attribute eventType { "premiere" | "performance" | "closing" }
+# RiC-A25 Language (controlled value)
+include "cvl/marc-lang-codes.rnc"
+languageAttribute = marc-lang-codes
+# RiC-A32 Place Type (controlled value)
+placeTypeAttribute = attribute placeType { "geographic" | "administrative" | "political" }
+# RiC-A33 Production Technique (optional controlled value)
+include "cvl/lc-mproduction.rnc"
+include "cvl/lc-recording-medium.rnc"
+productionTechniqueAttribute = (lcProductionMethods? | lc-recording-medium?)+
+# RiC-A36 Record Set Type (controlled value)
+recordSetTypeAttribute =
+	attribute recordSetType { "collection" | "series" | "subseries" | "file" | "fonds" | "subfonds" }
+# RiC-A37 Representation Type (controlled value)
+include "cvl/lc-representation-type.rnc"
+representationTypeAttribute = lc-content-types
+# RiC-A39 State (repeatable on RecordSet, controlled value)
+
+# Implementation decision: use CM examples in conjunction with https://www.getty.edu/research/publications/electronic_publications/cdwa/5state.html
+stateAttribute =
+	attribute state {
+		xsd:string {
+			pattern =
+				"([0-9]:[0-9])|(artists's proof)|(bon à tirer)|(hors-commerce)|(printer's proof)|(draft)|(final draft)|(original)|(copy)|(certified copy)"
+		}
+	}
+# RiC-A42 Date Type (controlled value)
+dateTypeAttribute = attribute dateType { "single" | "range" | "century" }?
+# RiC-A44 Mandate Type (controlled value)
+mandateTypeAttribute =
+	attribute mandateType {
+		"charter"
+		| "treaty"
+		| "contract"
+		| "letter of appointment"
+		| "papal mandate"
+		| "episcopal mandate"
+		| "court mandate"
+		| "election mandate"
+		| "popular mandate"
+		| "federal mandate"
+	}
+# RiC-A45 Rule Type (controlled value)
+ruleTypeAttribute =
+	attribute ruleType {
+		"legislation"
+		| "by-law"
+		| "professional standard"
+		| "industry practice"
+		| "cultural norm"
+		| "directive"
+		| "policy"
+	}
+
+## 
+## Attribute and Element groups
+##
+basicIdentityAttributes =
+	(attribute identity { xsd:ID }
+		| attribute uri { xsd:anyURI })+
+basicIdentityElements =
+	element name { basicIdentityAttributes? & text }*
+	& element generalDescription { basicIdentityAttributes? & text }?
+# RiC-A21 History
+
+## The following are being reused in different contexts individually (i.e. not in groups)
+historyElement = element history { basicIdentityAttributes? & text }
+# RiC-A26 Legal Status (repeatable on RecordSet, controlled value)
+legalStatusAttribute = attribute legalStatus { text }
+# RiC-A15 Demographic Group (controlled value)
+demographicGroupElement = element demographicGroup { text }
+
+##
+sharedRecordResourceAndInstantiationElements =
+	historyElement?
+	& # RiC-A03 Authenticity Note
+			element authenticityNote { basicIdentityAttributes? & text }?
+	& # RiC-A08 Conditions of Access
+			element conditionsOfAccess { basicIdentityAttributes? & text }?
+	& # RiC-A09 Conditions of Use
+			element conditionsOfUse { basicIdentityAttributes? & text }?
+	& # RiC-A40 Structure
+			element structure { basicIdentityAttributes? & text }?
+sharedRecordResourceAttributes =
+	# RiC-A07 Classification (optional controlled value)
+	attribute classification { text }*,
+	contentTypeAttribute*,
+	languageAttribute*
+sharedRecordResourceElements =
+	# RiC-A35 Record Resource Extent
+	element recordResourceExtent { basicIdentityAttributes? & text }*,
+	# RiC-A38 Scope and content
+	element scopeAndContent { basicIdentityAttributes? & text }?
+sharedRecordSetAttributes =
+	recordSetTypeAttribute,
+	
+	## implementation decision: make this a cv-field; don't use "unknown"
+	accrualsAttribute?,
+	legalStatusAttribute*
+sharedRecordSetElements =
+	# RiC-A24 Integrity Note (repeatable on RecordSet)
+	element integrityNote { basicIdentityAttributes? & text }*
+sharedRecordAndRecordPartAttributes =
+	legalStatusAttribute?,
+	stateAttribute?,
+	# RiC-A17 Documentary Form Type (controlled value)
+	documentaryFormTypeAttribute?
+sharedRecordAndRecordPartElements =
+	# RiC-A24 Integrity Note (repeatable on RecordSet)
+	element integrityNote { basicIdentityAttributes? & text }?
+sharedInstantiationAttributes =
+	# RiC-A05 Carrier Type (controlled value; "it is necessary to note the type of carrier" >> required
+	carrierTypeAttribute,
+	# RiC-A33 Production Technique (optional controlled value)
+	productionTechniqueAttribute*,
+	# RiC-A37 Representation Type (controlled value)
+	representationTypeAttribute?
+sharedInstantiationElements =
+	# RiC-A04 Carrier Extent
+	element carrierExtent { text }?,
+	# RiC-A23 Instantiation Extent
+	element instantiationExtent { text }*,
+	# RiC-A31 Physical Characteristics Note
+	element physicalCharacteristicsNote { text }*,
+	# RiC-A34 Quality of Representation Note
+	element qualityOfRepresentationNote { text }*
+sharedAgentAttributes = languageAttribute*, legalStatusAttribute?
+sharedAgentElements = historyElement?
+sharedPersonAndGroupElements = demographicGroupElement*
+sharedPlaceAttributes =
+	# RiC-A11 Coordinates
+	
+	## enforces tuple format lat lon
+	attribute coordinates {
+		xsd:string { pattern = "-?\d{1,2}\.\d{1,8}\s-?\d{1,2}\.\d{1,8}" }
+	}*,
+	placeTypeAttribute?
+sharedPlaceElements =
+	historyElement?,
+	# RiC-A27 Location
+	element location { text }*
+
+## 
+## Entities
+##
+Thing =
+	element Thing {
+		basicIdentityAttributes
+		& attribute type { text }?
+		& basicIdentityElements
+		#relations
+		& thing_relations*
+	}
+RecordResource =
+	element RecordResource {
+		basicIdentityAttributes
+		& sharedRecordResourceAttributes
+		& (
+			(
+				attribute type { "RecordSet" }
+						& sharedRecordSetAttributes
+						& sharedRecordSetElements
+						#relations
+						& recordSet_relations*
+			  )
+			| (
+				attribute type { "Record" }
+								& sharedRecordAndRecordPartAttributes
+								& sharedRecordAndRecordPartElements
+								#relations
+								& record_relations*
+			  )
+			| (
+				attribute type { "RecordPart" }
+								& sharedRecordAndRecordPartAttributes
+								& sharedRecordAndRecordPartElements
+								#relations
+								& recordPart_relations*
+			  )
+		  )
+		& basicIdentityElements
+		& sharedRecordResourceAndInstantiationElements
+		& sharedRecordResourceElements
+		# relations
+		& thing_relations*
+		& recordResource_relations*
+	}
+Instantiation =
+	element Instantiation {
+		basicIdentityAttributes
+		& sharedInstantiationAttributes
+		& basicIdentityElements
+		& sharedRecordResourceAndInstantiationElements
+		& sharedInstantiationElements
+		#relations
+		& thing_relations*
+		& instantiation_relations*
+	}
+Agent =
+	element Agent {
+		basicIdentityAttributes
+		& sharedAgentAttributes
+		& (
+			((#group person, group, position
+				(
+					attribute type { "person" }
+					# RiC-A30 Occupation Type (controlled value, repeatable)
+					& element occupationType { text }*
+					& sharedPersonAndGroupElements
+					#relations
+					& person_relations*
+				)
+				| 
+				(
+					attribute type { "group" }
+					& (
+						(attribute groupType { "family" }
+						# RiC-A20 Family Type (controlled value)
+						& attribute familyType { text }?)
+						| 
+						(attribute groupType { "corporateBody" }
+						# RiC-A12 Corporate Body Type (controlled value)
+						& attribute corporateBodyType { text }?)
+				  	)
+				& sharedPersonAndGroupElements
+				#relations
+				& group_relations*
+				)
+				| 
+				(
+					attribute type { "position" }
+					#relations
+					& position_relations*
+				)
+			)
+			#relations
+			& personGroupPosition_relations*
+			)
+			| 
+			(
+				attribute type { "mechanism" }
+				# RiC-A41 Technical Characteristics
+				& element technicalCharacteristicsElement { text }?
+			)
+		)
+		& basicIdentityElements
+		#relations
+		& thing_relations*
+		& agent_relations*
+	}
+Event =
+	element Event {
+		basicIdentityAttributes
+		& ((# RiC-A18 Event Type (controlled value)
+						attribute type { "resourceEvent" }
+						& resourceEventTypeAttribute)
+					| (attribute type { "lifeEvent" }
+						& lifeEventTypeAttribute)
+					| (attribute type { "performanceEvent" }
+						& performanceEventTypeAttribute)
+					| (attribute type { "activity" }
+						& activityTypeAttribute?
+						#relations
+						& activity_relations*))
+		& basicIdentityElements
+		& historyElement?
+		#relations
+		& thing_relations*
+		& event_relations*
+	}
+Rule =
+	element Rule {
+		basicIdentityAttributes
+		& (ruleTypeAttribute
+					| (attribute type { "mandate" }
+								& mandateTypeAttribute
+								#relations
+								& mandate_relations*))
+		& basicIdentityElements
+		& historyElement?
+		#relations
+		& thing_relations*
+		& rule_relations*
+	}
+Place =
+	element Place {
+		basicIdentityAttributes 
+		& sharedPlaceAttributes 
+		& basicIdentityElements 
+		& sharedPlaceElements 
+		#relations
+		& thing_relations*
+		& place_relations*
+	}
+Date =
+	element Date {
+		basicIdentityAttributes
+		& # RiC-A13 Date Qualifier (controlled value)
+				attribute dateQualifier { text }?
+		& dateTypeAttribute
+		& (# RiC-A29 Normalized Date
+					attribute normalizedDate {
+						xsd:string {
+							pattern =
+								"(\-?(0|1|2)([0-9]{3})(((01|02|03|04|05|06|07|08|09|10|11|12)((0[1-9])|((1|2)[0-9])|(3[0-1])))|\-((01|02|03|04|05|06|07|08|09|10|11|12)(\-((0[1-9])|((1|2)[0-9])|(3[0-1])))?))?)(/\-?(0|1|2)([0-9]{3})(((01|02|03|04|05|06|07|08|09|10|11|12)((0[1-9])|((1|2)[0-9])|(3[0-1])))|\-((01|02|03|04|05|06|07|08|09|10|11|12)(\-((0[1-9])|((1|2)[0-9])|(3[0-1])))?))?)?"
+						}
+					}?
+					| # RiC-A19 Expressed Date 
+							element expressedDate { text }?)+
+		& basicIdentityElements
+		#relations
+		& thing_relations*
+		& date_relations*
+	}
+
+## 
+## Relation groups
+##
+basicRelationsAttributes =
+	attribute target {
+		xsd:anyURI { pattern = ".+" }
+	}+,
+	
+	## implementation choice; not in CM
+	attribute certaintyOfRelation { "uncertain" }?,
+	attribute dateOfRelation {
+		xsd:anyURI { pattern = ".+" }
+	}?,
+	attribute placeOfRelation {
+		xsd:anyURI { pattern = ".+" }
+	}?,
+	attribute sourceOfRelation {
+		xsd:anyURI { pattern = ".+" }
+	}?
+
+## 
+## Domain: Thing
+##
+thing_relations =
+	thing_to_thing_relations
+	| thing_to_recordResource_relations
+	| thing_to_agent_relations
+	| thing_to_personGroupPosition_relations
+	| thing_to_event_relations
+	| thing_to_place_relations
+	| thing_to_date_relations
+	| thing_to_rule_relations
+thing_to_thing_relations =
+	element follows_in_time {
+		attribute identifierOfRelation { "RiC-R009i" }
+		& basicRelationsAttributes
+	}*
+	& element follows_or_followed {
+				attribute identifierOfRelation { "RiC-R008i" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_part {
+				attribute identifierOfRelation { "RiC-R002" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_part_of {
+				attribute identifierOfRelation { "RiC-R002i" }
+				& basicRelationsAttributes
+			}*
+	& element is_related_to {
+				attribute identifierOfRelation { "RiC-R001" }
+				& basicRelationsAttributes
+			}*
+	& element precedes_in_time {
+				attribute identifierOfRelation { "RiC-R009" }
+				& basicRelationsAttributes
+			}*
+	& element precedes_or_preceded {
+				attribute identifierOfRelation { "RiC-R008" }
+				& basicRelationsAttributes
+			}*
+thing_to_recordResource_relations =
+	element is_or_was_described_by {
+		attribute identifierOfRelation { "RiC-R021i" }
+		& basicRelationsAttributes
+	}*
+	& element is_or_was_main_subject_of {
+				attribute identifierOfRelation { "RiC-R020i" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_subject_of {
+				attribute identifierOfRelation { "RiC-R019i" }
+				& basicRelationsAttributes
+			}*
+thing_to_agent_relations =
+	element is_or_was_under_authority_of {
+		attribute identifierOfRelation { "RiC-R036i" }
+		& basicRelationsAttributes
+	}*
+thing_to_personGroupPosition_relations =
+	element has_or_had_owner {
+		attribute identifierOfRelation { "RiC-R037i" }
+		& basicRelationsAttributes
+	}*
+thing_to_event_relations =
+	element is_associated_with_event {
+		attribute identifierOfRelation { "RiC-R057i" }
+		& basicRelationsAttributes
+	}*
+	& element is_or_was_affected_by {
+				attribute identifierOfRelation { "RiC-R059i" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_participant_in {
+				attribute identifierOfRelation { "RiC-R058i" }
+				& basicRelationsAttributes
+			}*
+	& element results_or_resulted_from {
+				attribute identifierOfRelation { "RiC-R061i" }
+				& basicRelationsAttributes
+			}*
+thing_to_date_relations = 
+element has_beginning_date { attribute identifierOfRelation { "RiC-R069i"} & basicRelationsAttributes }* &
+element has_end_date { attribute identifierOfRelation { "RiC-R071i"} & basicRelationsAttributes }* &
+element has_modification_date { attribute identifierOfRelation { "RiC-R073i"} & basicRelationsAttributes }* &
+element is_associated_with_date { attribute identifierOfRelation { "RiC-R068i"} & basicRelationsAttributes }*
+
+thing_to_place_relations =
+	element has_or_had_location {
+		attribute identifierOfRelation { "RiC-R075i" }
+		& basicRelationsAttributes
+	}*
+	& element is_associated_with_place {
+				attribute identifierOfRelation { "RiC-R074i" }
+				& basicRelationsAttributes
+			}*
+thing_to_rule_relations =
+	element is_associated_with_rule {
+		attribute identifierOfRelation { "RiC-R062i" }
+		& basicRelationsAttributes
+	}*
+	& element is_or_was_regulated_by {
+				attribute identifierOfRelation { "RiC-R063i" }
+				& basicRelationsAttributes
+			}*
+
+## 
+## Domain: Record Resource
+##
+recordResource_relations =
+	recordResource_to_thing_relations
+	| recordResource_to_recordResource_relations
+	| recordResource_to_instantiation_relations
+	| recordResource_to_agent_relations
+	| recordResource_to_personGroupPosition_relations
+	| recordResource_to_activity_relations
+	| recordResource_to_rule_relations
+recordSet_relations = record_set_to_record_set_relations | record_set_to_record_relations
+record_relations =
+	record_to_recordSet_relations
+	| record_to_record_relations
+	| record_to_recordPart_relations
+	| record_to_personGroupPosition_relations
+recordPart_relations = recordPart_to_record_relations
+recordResource_to_thing_relations =
+	element describes_or_described {
+		attribute identifierOfRelation { "RiC-R021" }
+		& basicRelationsAttributes
+	}*
+	& element has_or_had_main_subject {
+				attribute identifierOfRelation { "RiC-R020" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_subject {
+				attribute identifierOfRelation { "RiC-R019" }
+				& basicRelationsAttributes
+			}*
+recordResource_to_recordResource_relations =
+	element has_copy {
+		attribute identifierOfRelation { "RiC-R012" }
+		& basicRelationsAttributes
+	}*
+	& element has_genetic_link_to_recordResource {
+				attribute identifierOfRelation { "RiC-R023" }
+				& basicRelationsAttributes
+			}*
+	& element has_reply {
+				attribute identifierOfRelation { "RiC-R013" }
+				& basicRelationsAttributes
+			}*
+	& element is_copy_of {
+				attribute identifierOfRelation { "RiC-R012i" }
+				& basicRelationsAttributes
+			}*
+	& element is_recordResource_associated_with_recordResource {
+				attribute identifierOfRelation { "RiC-R022" }
+				& basicRelationsAttributes
+			}*
+	& element is_reply_to {
+				attribute identifierOfRelation { "RiC-R013i" }
+				& basicRelationsAttributes
+			}*
+recordResource_to_instantiation_relations =
+	element has_or_had_instantiation {
+		attribute identifierOfRelation { "RiC-R025" }
+		& basicRelationsAttributes
+	}*
+recordResource_to_agent_relations =
+	element has_accumulator {
+		attribute identifierOfRelation { "RiC-R028" }
+		& basicRelationsAttributes
+	}*
+	& element has_addressee {
+				attribute identifierOfRelation { "RiC-R032" }
+				& basicRelationsAttributes
+			}*
+	& element has_collector {
+				attribute identifierOfRelation { "RiC-R030" }
+				& basicRelationsAttributes
+			}*
+	& element has_creator {
+				attribute identifierOfRelation { "RiC-R027" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_holder {
+				attribute identifierOfRelation { "RiC-R039i" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_manager {
+				attribute identifierOfRelation { "RiC-R038i" }
+				& basicRelationsAttributes
+			}*
+	& element has_provenance {
+				attribute identifierOfRelation { "RiC-R026" }
+				& basicRelationsAttributes
+			}*
+	& element has_receiver {
+				attribute identifierOfRelation { "RiC-R029" }
+				& basicRelationsAttributes
+			}*
+	& element has_sender {
+				attribute identifierOfRelation { "RiC-R031" }
+				& basicRelationsAttributes
+			}*
+recordResource_to_personGroupPosition_relations =
+	element has_or_had_intellectual_property_rights_holder {
+		attribute identifierOfRelation { "RiC-R040i" }
+		& basicRelationsAttributes
+	}*
+recordResource_to_activity_relations =
+	element documents {
+		attribute identifierOfRelation { "RiC-R033" }
+		& basicRelationsAttributes
+	}*
+recordResource_to_rule_relations =
+	element expresses_or_expressed {
+		attribute identifierOfRelation { "RiC-R064i" }
+		& basicRelationsAttributes
+	}*
+record_set_to_record_set_relations =
+	element includes_or_included {
+		attribute identifierOfRelation { "RiC-R024" }
+		& basicRelationsAttributes
+	}*
+	& element is_or_was_included_in {
+				attribute identifierOfRelation { "RiC-R024i" }
+				& basicRelationsAttributes
+			}*
+record_set_to_record_relations =
+	element includes_or_included {
+		attribute identifierOfRelation { "RiC-R024" }
+		& basicRelationsAttributes
+	}*
+record_to_recordSet_relations =
+	element is_or_was_included_in {
+		attribute identifierOfRelation { "RiC-R024i" }
+		& basicRelationsAttributes
+	}*
+record_to_record_relations =
+	element has_draft {
+		attribute identifierOfRelation { "RiC-R011i" }
+		& basicRelationsAttributes
+	}*
+	& element has_original {
+				attribute identifierOfRelation { "RiC-R010i" }
+				& basicRelationsAttributes
+			}*
+	& element is_draft_of {
+				attribute identifierOfRelation { "RiC-R011" }
+				& basicRelationsAttributes
+			}*
+	& element is_original_of {
+				attribute identifierOfRelation { "RiC-R010" }
+				& basicRelationsAttributes
+			}*
+record_to_recordPart_relations =
+	element has_or_had_constituent {
+		attribute identifierOfRelation { "RiC-R003" }
+		& basicRelationsAttributes
+	}*
+record_to_personGroupPosition_relations =
+	element has_author {
+		attribute identifierOfRelation { "RiC-R079" }
+		& basicRelationsAttributes
+	}*
+recordPart_to_record_relations =
+	element is_or_was_constituent_of {
+		attribute identifierOfRelation { "RiC-R003i" }
+		& basicRelationsAttributes
+	}*
+
+## 
+## Domain: Instantiation
+##
+instantiation_relations =
+	instantiation_to_recordResource_relations
+	| instantiation_to_instantiation_relations
+	| instantiation_to_agent_relations
+	| instantiation_to_personGroupPosition_relations
+	| instantiation_to_activity_relations
+instantiation_to_recordResource_relations =
+	element is_or_was_instantiation_of {
+		attribute identifierOfRelation { "RiC-R025i" }
+		& basicRelationsAttributes
+	}*
+instantiation_to_instantiation_relations =
+	element has_or_had_derived_instantiation {
+		attribute identifierOfRelation { "RiC-R014" }
+		& basicRelationsAttributes
+	}*
+	& element has_or_had_component {
+				attribute identifierOfRelation { "RiC-R004" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_derived_from_instantiation {
+				attribute identifierOfRelation { "RiC-R014i" }
+				& basicRelationsAttributes
+			}*
+	& element is_functionally_equivalent_to {
+				attribute identifierOfRelation { "RiC-R035" }
+				& basicRelationsAttributes
+			}*
+	& element is_instantiation_associated_with_instantiation {
+				attribute identifierOfRelation { "RiC-R034" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_component_of {
+				attribute identifierOfRelation { "RiC-R004i" }
+				& basicRelationsAttributes
+			}*
+	& element migrated_from {
+				attribute identifierOfRelation { "RiC-R015i" }
+				& basicRelationsAttributes
+			}*
+	& element migrated_into {
+				attribute identifierOfRelation { "RiC-R015" }
+				& basicRelationsAttributes
+			}*
+instantiation_to_agent_relations =
+	element has_accumulator {
+		attribute identifierOfRelation { "RiC-R028" }
+		& basicRelationsAttributes
+	}*
+	& element has_addressee {
+				attribute identifierOfRelation { "RiC-R032" }
+				& basicRelationsAttributes
+			}*
+	& element has_collector {
+				attribute identifierOfRelation { "RiC-R030" }
+				& basicRelationsAttributes
+			}*
+	& element has_creator {
+				attribute identifierOfRelation { "RiC-R027" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_holder {
+				attribute identifierOfRelation { "RiC-R039i" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_manager {
+				attribute identifierOfRelation { "RiC-R038i" }
+				& basicRelationsAttributes
+			}*
+	& element has_provenance {
+				attribute identifierOfRelation { "RiC-R026" }
+				& basicRelationsAttributes
+			}*
+	& element has_receiver {
+				attribute identifierOfRelation { "RiC-R029" }
+				& basicRelationsAttributes
+			}*
+	& element has_sender {
+				attribute identifierOfRelation { "RiC-R031" }
+				& basicRelationsAttributes
+			}*
+instantiation_to_personGroupPosition_relations =
+	element has_or_had_intellectual_property_rights_holder {
+		attribute identifierOfRelation { "RiC-R040i" }
+		& basicRelationsAttributes
+	}*
+instantiation_to_activity_relations =
+	element documents {
+		attribute identifierOfRelation { "RiC-R033" }
+		& basicRelationsAttributes
+	}*
+
+## 
+## Domain: Agent
+##
+agent_relations = 
+	agent_to_thing_relations 
+	| agent_to_recordResource_relations 
+	| agent_to_instantiation_relations 
+	| agent_to_agent_relations 
+	| agent_to_activity_relations 
+	| agent_to_place_relations 
+	| agent_to_rule_relations 
+	| agent_to_mandate_relations 
+
+personGroupPosition_relations = 
+	personGroupPosition_to_thing_relations 
+ 	| personGroupPosition_to_recordResource_relations 
+ 	| personGroupPosition_to_record_relations 
+ 	| personGroupPosition_to_instantiation_relations
+
+person_relations = 
+	person_to_person_relations 
+	| person_to_group_relations 
+	| person_to_position_relations 
+	| person_to_date_relations
+
+group_relations = 
+	group_to_group_relations
+	| group_to_position_relations
+
+position_relations = 
+	position_to_person_relations
+	| position_to_group_relations
+
+agent_to_thing_relations =
+	element has_or_had_authority_over {
+		attribute identifierOfRelation { "RiC=R036" }
+		& basicRelationsAttributes
+	}*
+agent_to_recordResource_relations =
+	element is_accumulator_of {
+		attribute identifierOfRelation { "RiC-R028i" }
+		& basicRelationsAttributes
+	}*
+	& element is_addressee_of {
+				attribute identifierOfRelation { "RiC-R032i" }
+				& basicRelationsAttributes
+			}*
+	& element is_collector_of {
+				attribute identifierOfRelation { "RiC-R030i" }
+				& basicRelationsAttributes
+			}*
+	& element is_creator_of {
+				attribute identifierOfRelation { "RiC-R027i" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_holder_of {
+				attribute identifierOfRelation { "RiC-R039" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_manager_of {
+				attribute identifierOfRelation { "RiC-R038" }
+				& basicRelationsAttributes
+			}*
+	& element is_provenance_of {
+				attribute identifierOfRelation { "RiC-R026i" }
+				& basicRelationsAttributes
+			}*
+	& element is_receiver_of {
+				attribute identifierOfRelation { "RiC-R029i" }
+				& basicRelationsAttributes
+			}*
+	& element is_sender_of {
+				attribute identifierOfRelation { "RiC-R031i" }
+				& basicRelationsAttributes
+			}*
+agent_to_instantiation_relations =
+	element is_accumulator_of {
+		attribute identifierOfRelation { "RiC-R028i" }
+		& basicRelationsAttributes
+	}*
+	& element is_addressee_of {
+				attribute identifierOfRelation { "RiC-R032i" }
+				& basicRelationsAttributes
+			}*
+	& element is_collector_of {
+				attribute identifierOfRelation { "RiC-R030i" }
+				& basicRelationsAttributes
+			}*
+	& element is_creator_of {
+				attribute identifierOfRelation { "RiC-R027i" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_holder_of {
+				attribute identifierOfRelation { "RiC-R039" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_manager_of {
+				attribute identifierOfRelation { "RiC-R038" }
+				& basicRelationsAttributes
+			}*
+	& element is_provenance_of {
+				attribute identifierOfRelation { "RiC-R026i" }
+				& basicRelationsAttributes
+			}*
+	& element is_receiver_of {
+				attribute identifierOfRelation { "RiC-R029i" }
+				& basicRelationsAttributes
+			}*
+	& element is_sender_of {
+				attribute identifierOfRelation { "RiC-R031i" }
+				& basicRelationsAttributes
+			}*
+agent_to_agent_relations =
+	element has_or_had_controller {
+		attribute identifierOfRelation { "RiC-R041i" }
+		& basicRelationsAttributes
+	}*
+	& element has_or_had_subordinate {
+				attribute identifierOfRelation { "RiC-R045" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_work_relation_with {
+				attribute identifierOfRelation { "RiC-R046" }
+				& basicRelationsAttributes
+			}*
+	& element has_successor {
+				attribute identifierOfRelation { "RiC-R016" }
+				& basicRelationsAttributes
+			}*
+	& element is_agent_associated_with_agent {
+				attribute identifierOfRelation { "RiC-R044" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_controller_of {
+				attribute identifierOfRelation { "RiC-R041" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_subordinate_to {
+				attribute identifierOfRelation { "RiC-R045i" }
+				& basicRelationsAttributes
+			}*
+	& element is_successor_of {
+				attribute identifierOfRelation { "RiC-R016i" }
+				& basicRelationsAttributes
+			}*
+agent_to_activity_relations =
+	element performs_or_performed {
+		attribute identifierOfRelation { "RiC-R060i" }
+		& basicRelationsAttributes
+	}*
+agent_to_place_relations =
+	element has_or_had_jurisdiction {
+		attribute identifierOfRelation { "RiC-R076i" }
+		& basicRelationsAttributes
+	}*
+agent_to_rule_relations =
+	element is_or_was_responsible_for_enforcing {
+		attribute identifierOfRelation { "RiC-R066i" }
+		& basicRelationsAttributes
+	}*
+	& element is_responsible_for_issuing {
+				attribute identifierOfRelation { "RiC-R065i" }
+				& basicRelationsAttributes
+			}*
+agent_to_mandate_relations =
+	element authorized_by {
+		attribute identifierOfRelation { "RiC-R067i" }
+		& basicRelationsAttributes
+	}*
+personGroupPosition_to_thing_relations =
+	element is_or_was_owner_of {
+		attribute identifierOfRelation { "RiC-R037" }
+		& basicRelationsAttributes
+	}*
+personGroupPosition_to_recordResource_relations =
+	element is_or_was_holder_of_intellectual_property_rights_of {
+		attribute identifierOfRelation { "RiC-R040" }
+		& basicRelationsAttributes
+	}*
+personGroupPosition_to_record_relations =
+	element is_author_of {
+		attribute identifierOfRelation { "RiC-R079i" }
+		& basicRelationsAttributes
+	}*
+personGroupPosition_to_instantiation_relations =
+	element is_or_was_holder_of_intellectual_property_rights_of {
+		attribute identifierOfRelation { "RiC-R040" }
+		& basicRelationsAttributes
+	}*
+person_to_person_relations =
+	element has_descendant {
+		attribute identifierOfRelation { "RiC-R017" }
+		& basicRelationsAttributes
+	}*
+	& element has_ancestor {
+				attribute identifierOfRelation { "RiC-R017i" }
+				& basicRelationsAttributes
+			}*
+	& element has_child {
+				attribute identifierOfRelation { "RiC-R018" }
+				& basicRelationsAttributes
+			}*
+	& element is_child_of {
+				attribute identifierOfRelation { "RiC-R018i" }
+				& basicRelationsAttributes
+			}*
+	& element has_family_association_with {
+				attribute identifierOfRelation { "RiC-R047" }
+				& basicRelationsAttributes
+			}*
+	& element has_sibling {
+				attribute identifierOfRelation { "RiC-R048" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_spouse {
+				attribute identifierOfRelation { "RiC-R049" }
+				& basicRelationsAttributes
+			}*
+	& element knows_of {
+				attribute identifierOfRelation { "RiC-R050" }
+				& basicRelationsAttributes
+			}*
+	& element known_by {
+				attribute identifierOfRelation { "RiC-R050i" }
+				& basicRelationsAttributes
+			}*
+	& element knows {
+				attribute identifierOfRelation { "RiC-R051" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_correspondent {
+				attribute identifierOfRelation { "RiC-R052" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_teacher {
+				attribute identifierOfRelation { "RiC-R053" }
+				& basicRelationsAttributes
+			}*
+	& element has_or_had_student {
+				attribute identifierOfRelation { "RiC-R053i" }
+				& basicRelationsAttributes
+			}*
+person_to_group_relations =
+	element is_or_was_leader_of {
+		attribute identifierOfRelation { "RiC-R042" }
+		& basicRelationsAttributes
+	}*
+	& element is_or_was_member_of {
+				attribute identifierOfRelation { "RiC-R055i" }
+				& basicRelationsAttributes
+			}*
+person_to_position_relations =
+	element occupies_or_occupied {
+		attribute identifierOfRelation { "RiC-R054" }
+		& basicRelationsAttributes
+	}*
+person_to_date_relations =
+	element has_birth_date {
+		attribute identifierOfRelation { "RiC-R070i" }
+		& basicRelationsAttributes
+	}*
+	& element has_death_date {
+				attribute identifierOfRelation { "RiC-R072i" }
+				& basicRelationsAttributes
+			}*
+group_to_group_relations =
+	element has_or_had_subdivision {
+		attribute identifierOfRelation { "RiC-R005" }
+		& basicRelationsAttributes
+	}*
+	& element is_or_was_subdivision_of {
+				attribute identifierOfRelation { "RiC-R005i" }
+				& basicRelationsAttributes
+			}*
+group_to_position_relations =
+	element has_or_had_position {
+		attribute identifierOfRelation { "RiC-R056i" }
+		& basicRelationsAttributes
+	}*
+position_to_person_relations =
+	element is_or_was_occupied_by {
+		attribute identifierOfRelation { "RiC-R054i" }
+		& basicRelationsAttributes
+	}*
+position_to_group_relations =
+	element exists_or_existed_in {
+		attribute identifierOfRelation { "RiC-R056" }
+		& basicRelationsAttributes
+	}*
+
+## 
+## Domain: Event
+##
+event_relations = 
+	event_to_thing_relations
+	| event_to_event_relations
+
+activity_relations = 
+	activity_to_recordResource_relations
+	| activity_to_instantiation_relations
+	| activity_to_agent_relations
+
+event_to_thing_relations =
+	element affects_or_affected {
+		attribute identifierOfRelation { "RiC-R059" }
+		& basicRelationsAttributes
+	}*
+	& element has_or_had_participant {
+				attribute identifierOfRelation { "RiC-R058" }
+				& basicRelationsAttributes
+			}*
+	& element is_event_associated_with {
+				attribute identifierOfRelation { "RiC-R057" }
+				& basicRelationsAttributes
+			}*
+	& element results_or_resulted_in {
+				attribute identifierOfRelation { "RiC-R061" }
+				& basicRelationsAttributes
+			}*
+event_to_event_relations =
+	element has_or_had_subevent {
+		attribute identifierOfRelation { "RiC-R006" }
+		& basicRelationsAttributes
+	}*
+	& element is_or_was_subevent_of {
+				attribute identifierOfRelation { "RiC-R006i" }
+				& basicRelationsAttributes
+			}*
+activity_to_recordResource_relations =
+	element documented_by {
+		attribute identifierOfRelation { "RiC-R033i" }
+		& basicRelationsAttributes
+	}*
+activity_to_instantiation_relations =
+	element documented_by {
+		attribute identifierOfRelation { "RiC-R033i" }
+		& basicRelationsAttributes
+	}*
+activity_to_agent_relations =
+	element is_or_was_performed_by {
+		attribute identifierOfRelation { "RiC-R060" }
+		& basicRelationsAttributes
+	}*
+
+## 
+## Domain: Date
+##
+date_relations = 
+	date_to_thing_relations
+	| date_to_recordResource_relations
+	| date_to_recordSet_relations
+	| date_to_instantiation_relations
+	| date_to_person_relations
+	| date_to_event_relations
+	| date_to_date_relations
+
+date_to_thing_relations =
+	element is_beginning_date_of {
+		attribute identifierOfRelation { "RiC-R069" }
+		& basicRelationsAttributes
+	}*
+	& element is_date_associated_with {
+				attribute identifierOfRelation { "RiC-R068" }
+				& basicRelationsAttributes
+			}*
+	& element is_end_date_of {
+				attribute identifierOfRelation { "RiC-R071" }
+				& basicRelationsAttributes
+			}*
+	& element is_modification_date_of {
+				attribute identifierOfRelation { "RiC-R073" }
+				& basicRelationsAttributes
+			}*
+
+date_to_recordResource_relations =
+	element is_creation_date_of {
+		attribute identifierOfRelation { "RiC-R080" }
+		& basicRelationsAttributes
+	}*
+
+date_to_recordSet_relations = 
+	element is_or_was_creation_date_of_all_members_of {
+		attribute identifierOfRelation { "RiC-R081" }
+		& basicRelationsAttributes
+	}*
+	& 
+	element is_or_was_creation_date_of_some_members_of_{
+		attribute identifierOfRelation { "RiC-R082" }
+		& basicRelationsAttributes
+	}*
+	& 
+	element is_or_was_creation_date_of_most_members_of_{
+		attribute identifierOfRelation { "RiC-R083" }
+		& basicRelationsAttributes
+	}*
+
+date_to_instantiation_relations =
+	element is_creation_date_of {
+		attribute identifierOfRelation { "RiC-R080" }
+		& basicRelationsAttributes
+	}*
+
+date_to_person_relations =
+	element is_birth_date_of {
+		attribute identifierOfRelation { "RiC-R070" }
+		& basicRelationsAttributes
+	}*
+	& element is_death_date_of {
+				attribute identifierOfRelation { "RiC-R072" }
+				& basicRelationsAttributes
+			}*
+
+date_to_event_relations =
+	element is_date_of_occurrence_of {
+		attribute identifierOfRelation { "RiC-R084" }
+		& basicRelationsAttributes
+	}*
+
+date_to_date_relations =
+	element is_within {
+		attribute identifierOfRelation { "RiC-R085" }
+		& basicRelationsAttributes
+	}*
+	& element intersects {
+		attribute identifierOfRelation { "RiC-R086" }
+		& basicRelationsAttributes
+	}*
+
+## 
+## Domain: Place
+##
+place_relations = 
+	place_to_thing_relations
+	| place_to_agent_relations
+	| place_to_place_relations
+
+place_to_thing_relations =
+	element is_or_was_location_of {
+		attribute identifierOfRelation { "RiC-R075" }
+		& basicRelationsAttributes
+	}*
+	& element is_place_associated_with {
+				attribute identifierOfRelation { "RiC-R074" }
+				& basicRelationsAttributes
+			}*
+place_to_agent_relations =
+	element is_or_was_jurisdiction_of {
+		attribute identifierOfRelation { "RiC-R076" }
+		& basicRelationsAttributes
+	}*
+place_to_place_relations =
+	element contains_or_contained {
+		attribute identifierOfRelation { "RiC-R007" }
+		& basicRelationsAttributes
+	}*
+	& element is_or_was_adjacent_to {
+				attribute identifierOfRelation { "RiC-R077" }
+				& basicRelationsAttributes
+			}*
+	& element is_or_was_contained_by {
+				attribute identifierOfRelation { "RiC-R007i" }
+				& basicRelationsAttributes
+			}*
+	& element overlaps_or_overlapped {
+				attribute identifierOfRelation { "RiC-R078" }
+				& basicRelationsAttributes
+			}*
+
+## 
+## Domain: Rule
+##
+rule_relations = 
+	rule_to_thing_relations
+	| rule_to_recordResource_relations
+	| rule_to_agent_relations
+
+mandate_relations = 
+	mandate_to_agent_relations
+
+rule_to_thing_relations =
+	element is_rule_associated_with {
+		attribute identifierOfRelation { "RiC-R062" }
+		& basicRelationsAttributes
+	}*
+	& element regulates_or_regulated {
+				attribute identifierOfRelation { "RiC-R063" }
+				& basicRelationsAttributes
+			}*
+rule_to_recordResource_relations =
+	element is_or_was_expressed_by {
+		attribute identifierOfRelation { "RiC-R064" }
+		& basicRelationsAttributes
+	}*
+rule_to_agent_relations =
+	element is_or_was_enforced_by {
+		attribute identifierOfRelation { "RiC-R066" }
+		& basicRelationsAttributes
+	}*
+	& element issued_by {
+				attribute identifierOfRelation { "RiC-R065" }
+				& basicRelationsAttributes
+			}*
+mandate_to_agent_relations =
+	element authorizes {
+		attribute identifierOfRelation { "RiC-R067" }
+		& basicRelationsAttributes
+	}*
