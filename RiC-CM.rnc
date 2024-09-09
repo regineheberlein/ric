@@ -11,6 +11,8 @@
 #It does not implement class hierarchies
 #It implements controlled vocabularies as local files (CVL directory)
 
+#Limitations:
+#This schema does not enforce the right-hand class constraints of object properties
 
 namespace sch = "http://www.ascc.net/xml/schematron"
 namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
