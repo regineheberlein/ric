@@ -1,4 +1,4 @@
-This is a rudimentary implementation of the RiC-CM as XML for testing purposes.
+This is a rudimentary implementation of the [RiC-CM](https://www.ica.org/app/uploads/2023/12/RiC-CM-1.0.pdf) as XML for testing purposes.
 
 ### Implementation principles:
 - Classes are represented as elements
