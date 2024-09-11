@@ -15,3 +15,12 @@ This is a rudimentary implementation of the [RiC-CM](https://www.ica.org/app/upl
 - This schema does not enforce the right-hand class constraints of object properties
 
 A complementary [Wikibase test implementation](https://recordsincontexts.wikibase.cloud) is in progress.
+
+### How to use:
+1. download the repository
+2. open `ric-cm-test.xml`
+3. play around with changing the data
+4. validate your changes against `RiC-CM.rnc`
+5. you can change the controlled vocabulary values by
+   - editing `RiC-CM.rnc` (for the shorter cvl definitions)
+   - and\or editing the files in the `CVL` directory (for long cvl lists)
