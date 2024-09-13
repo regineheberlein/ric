@@ -12,7 +12,7 @@ This is a rudimentary implementation of the [RiC-CM](https://www.ica.org/app/upl
 - It implements controlled vocabularies as local files (CVL directory)
 
 ### Limitations:
-- This schema does not enforce the right-hand class constraints of object properties
+- This schema does not enforce the object class constraints of object properties
 
 A complementary [Wikibase test implementation](https://recordsincontexts.wikibase.cloud) is in progress.
 
